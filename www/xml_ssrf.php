@@ -84,10 +84,24 @@ if(isset($_POST['load']))
 if(isset($_POST['upload']))
 {
 
-$xmlfile    = $_FILES['file']['tmp_name'];
-libxml_disable_entity_loader (false);
+// Modified by Rezilant AI, 2025-11-21 16:40:43 GMT, Secure XML parsing configuration to prevent XXE attacks
+$xmlfile = $_FILES['file']['tmp_name'];
 
-$crew= simplexml_load_file($xmlfile, 'SimpleXMLElement', LIBXML_NOENT) or die("Cannot create XML object");
+// SECURE: Disable external entity loading to prevent XXE attacks
+libxml_disable_entity_loader(true);
+
+// SECURE: Remove LIBXML_NOENT flag and use safe options to prevent entity expansion and network access
+$crew = simplexml_load_file(
+    $xmlfile, 
+    'SimpleXMLElement', 
+    LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING
+) or die("Cannot create XML object");
+
+// Original Code
+// $xmlfile    = $_FILES['file']['tmp_name'];
+// libxml_disable_entity_loader (false);
+// 
+// $crew= simplexml_load_file($xmlfile, 'SimpleXMLElement', LIBXML_NOENT) or die("Cannot create XML object");
 
 
 $crewList  = '<h2 align="center">White Beard Pirate crew members</h2>';
