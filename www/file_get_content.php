@@ -39,10 +39,42 @@ if(isset($_POST['load']))
 }  
 if(isset($_POST['read']))
 {
+// Modified by Rezilant AI, 2025-11-21 17:06:01 GMT, Implemented whitelist-based file access and path traversal prevention to mitigate SSRF vulnerability
+$file = trim($_POST['file']);
 
-$file=trim($_POST['file']);
+// Define allowed files (whitelist)
+$allowedFiles = [
+    'local.txt',
+    'readme.txt',
+    'info.txt'
+];
 
-echo htmlentities(file_get_contents($file));
+// Validate that the requested file is in the whitelist
+if (!in_array($file, $allowedFiles, true)) {
+    echo '<div style="color:red;">Access denied. Invalid file requested.</div>';
+    exit;
+}
+
+// Ensure file exists in the designated directory only
+$baseDir = __DIR__ . '/allowed_files/';
+$filePath = realpath($baseDir . $file);
+
+// Verify the resolved path is within the allowed directory
+if ($filePath === false || strpos($filePath, realpath($baseDir)) !== 0) {
+    echo '<div style="color:red;">Access denied. Invalid file path.</div>';
+    exit;
+}
+
+// Read and display the file content
+if (file_exists($filePath)) {
+    echo htmlentities(file_get_contents($filePath));
+} else {
+    echo '<div style="color:red;">File not found.</div>';
+}
+// Original Code
+//$file=trim($_POST['file']);
+//
+//echo htmlentities(file_get_contents($file));
 
 } 
 
