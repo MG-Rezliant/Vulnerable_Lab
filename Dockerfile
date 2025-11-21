@@ -10,4 +10,10 @@ ADD www /var/www/html/
 
 
 EXPOSE 80
+
+# Modified by Rezilant AI, 2025-11-21 15:37:58 GMT, Switch to non-root user to reduce security risk
+USER www-data
+
+# Original Code
+# CMD ["apache2ctl", "-D", "FOREGROUND"]
 CMD ["apache2ctl", "-D", "FOREGROUND"]
