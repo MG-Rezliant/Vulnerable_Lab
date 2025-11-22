@@ -37,6 +37,52 @@ if(isset($_POST['load']))
    <table width="50%" cellspacing="0" cellpadding="0" class="tb1" style="margin:10px 2px 10px;opacity: 0.6;" >';
 
 }  
+// Modified by Rezilant AI, 2025-11-22 14:21:42 GMT, Implemented whitelist-based approach to prevent SSRF vulnerabilities
+if(isset($_POST['read']))
+{
+    $file = $_POST['file']; // Don't convert to lowercase yet
+    
+    // Define whitelist of allowed files
+    $allowedFiles = [
+        'local.txt',
+        'readme.txt',
+        'info.txt'
+    ];
+    
+    // Define safe base directory
+    $baseDir = __DIR__ . '/allowed_files/';
+    
+    // Get the basename to prevent path traversal
+    $filename = basename($file);
+    
+    // Check if file is in whitelist
+    if (!in_array($filename, $allowedFiles)) {
+        echo '<table width="50%" cellspacing="0" cellpadding="0" class="tb1" style="opacity: 0.6;">
+               <tr><td align=center style="padding: 10px;">
+                Access denied. Only specific files are allowed.
+               </td></tr></table>';
+        return;
+    }
+    
+    // Construct safe file path
+    $safePath = $baseDir . $filename;
+    
+    // Verify the file exists and is within allowed directory
+    $realPath = realpath($safePath);
+    if ($realPath === false || strpos($realPath, realpath($baseDir)) !== 0) {
+        echo '<table width="50%" cellspacing="0" cellpadding="0" class="tb1" style="opacity: 0.6;">
+               <tr><td align=center style="padding: 10px;">
+                File not found or access denied.
+               </td></tr></table>';
+        return;
+    }
+    
+    // Read and display file content
+    $content = file_get_contents($realPath);
+    echo '<textarea rows=20 cols=60>'.htmlspecialchars($content, ENT_QUOTES, 'UTF-8')."</textarea>";
+}
+// Original Code
+/*
 if(isset($_POST['read']))
 {
 
@@ -63,18 +109,12 @@ if(strstr($file, 'localhost') == false && preg_match('/(^https*:\/\/[^:\/]+)/', 
 				}
 			else 
 				{
-					// Modified by Rezilant AI, 2025-01-XX XX:XX:XX GMT, Applied htmlspecialchars() to prevent XSS from file contents
-					echo '<textarea rows=20 cols=60>'.htmlspecialchars(file_get_contents($file), ENT_QUOTES, 'UTF-8')."</textarea>";
-					// Original Code
-					// echo '<textarea rows=20 cols=60>'.file_get_contents($file)."</textarea>";
+					echo '<textarea rows=20 cols=60>'.file_get_contents($file)."</textarea>";
 				}
 		}
 	else 
 		{
-			// Modified by Rezilant AI, 2025-01-XX XX:XX:XX GMT, Applied htmlspecialchars() to prevent XSS from file contents
-			echo '<textarea rows=20 cols=60>'.htmlspecialchars(file_get_contents($file), ENT_QUOTES, 'UTF-8')."</textarea>";
-			// Original Code
-			// echo '<textarea rows=20 cols=60>'.file_get_contents($file)."</textarea>";
+			echo '<textarea rows=20 cols=60>'.file_get_contents($file)."</textarea>";
 		}
   
   }
@@ -92,16 +132,14 @@ if(strstr($file, 'localhost') == false && preg_match('/(^https*:\/\/[^:\/]+)/', 
   
   else 
 	{
-		// Modified by Rezilant AI, 2025-01-XX XX:XX:XX GMT, Applied htmlspecialchars() to prevent XSS from file contents
-		echo '<textarea rows=20 cols=60>'.htmlspecialchars(file_get_contents($file), ENT_QUOTES, 'UTF-8')."</textarea>";
-		// Original Code
-		// echo '<textarea rows=20 cols=60>'.file_get_contents($file)."</textarea>";
+		echo '<textarea rows=20 cols=60>'.file_get_contents($file)."</textarea>";
 	}
 	
 	
 	
 	
 } 
+*/
 
 if(isset($_POST['us']))
 	{
